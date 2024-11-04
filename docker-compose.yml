@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: pagedb
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - pageseach_net
+
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/var/www/html
+    networks:
+      - pageseach_net
+    depends_on:
+      - db
+      - rabbitmq
+
+  rabbitmq:
+    image: rabbitmq:management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - pageseach_net
+
+volumes:
+  db_data:
+
+networks:
+  pageseach_net:
+    driver: bridge
